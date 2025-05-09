@@ -1,0 +1,6 @@
+# 仅供pip用户参考，推荐使用poetry管理
+pytest>=7.0.0
+flake8>=6.0.0
+isort>=5.0.0
+pre-commit>=3.0.0
+coverage>=7.0.0 
