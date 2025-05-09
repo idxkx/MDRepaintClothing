@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+<!--
+cursor.rule.history.mdc
+agent requested: true
+适用场景：
+- agent 需管理/还原历史记录、追溯操作时
+-->
+# 历史记录与追溯
+- 每次生图操作均记录：原图、分割图、描述生成图、服装描述内容、模型选择、参数、运算时间
+- 可还原三图对比页面

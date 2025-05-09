@@ -1,0 +1,18 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+<!--
+cursor.rule.structure.mdc
+agent requested: true
+适用场景：
+- agent 需生成/校验项目目录结构、文件组织时
+-->
+# 文件结构建议
+- 前端：/frontend
+- 后端：/backend
+- 日志：/logs
+- 配置：/config
+- 历史记录：/history
+- 文档：/docs

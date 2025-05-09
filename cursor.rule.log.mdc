@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+<!--
+cursor.rule.log.mdc
+agent requested: true
+适用场景：
+- agent 需处理日志、报错、追溯时
+-->
+# 日志与报错
+- logs/ 目录，分级（info、warning、error），带时间戳
+- 不允许模拟或伪造数据，所有报错需原样记录并写入日志

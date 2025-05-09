@@ -1,0 +1,16 @@
+---
+description: 需管理、切换、扩展后端模型时 ， 需校验模型接口规范时
+globs: 
+alwaysApply: false
+---
+<!--
+cursor.rule.model.mdc
+agent requested: true
+适用场景：
+- agent 需管理、切换、扩展后端模型时
+- agent 需校验模型接口规范时
+-->
+# 模型管理
+- 图像分割、图像描述、文生图均支持多模型
+- 后端通过配置文件切换模型（建议使用 yaml/json）
+- 新模型需独立接口和代码文件，互不影响，可独立服务
