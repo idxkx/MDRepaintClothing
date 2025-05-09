@@ -1,16 +1,11 @@
-import logging
-import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
+import os
 from . import upload
+from . import logging_config
 
 app = FastAPI(title="MDRepaintClothing 后端API")
-
-# 日志配置
-from .logging_config import *
 
 # 允许跨域（便于前端本地开发调试）
 app.add_middleware(
