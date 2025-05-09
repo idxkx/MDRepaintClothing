@@ -15,3 +15,8 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+segmentation_handler = logging.FileHandler('logs/segmentation.log', encoding='utf-8')
+segmentation_handler.setLevel(logging.INFO)
+segmentation_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+logging.getLogger('segmentation').addHandler(segmentation_handler)

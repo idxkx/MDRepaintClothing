@@ -1,34 +1,41 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import imageCompression from 'browser-image-compression';
 
-export default function ImageUploader() {
+export default function ImageUploader({ onUploaded }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [uploadedUrl, setUploadedUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
 
-  // 选择图片后本地预览
-  const handleFileChange = (e) => {
+  // 选择图片后本地预览+压缩
+  const handleFileChange = async (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
-    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowed.includes(selected.type)) {
-      setError('仅支持jpg/png/webp格式图片');
-      setFile(null);
-      setPreviewUrl('');
-      return;
-    }
-    if (selected.size > 5 * 1024 * 1024) {
-      setError('图片大小不能超过5MB');
-      setFile(null);
-      setPreviewUrl('');
-      return;
-    }
     setError('');
-    setFile(selected);
-    setPreviewUrl(URL.createObjectURL(selected));
-    setUploadedUrl('');
+    setCompressing(true);
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: selected.type
+      };
+      const compressedFile = await imageCompression(selected, options);
+      // 用原文件名和类型创建新File，保证filename和type都对
+      const fixedFile = new File([compressedFile], selected.name, { type: compressedFile.type });
+      setFile(fixedFile);
+      setPreviewUrl(URL.createObjectURL(fixedFile));
+      setUploadedUrl('');
+    } catch (err) {
+      setError('图片压缩失败，请重试');
+      setFile(null);
+      setPreviewUrl('');
+    } finally {
+      setCompressing(false);
+    }
   };
 
   // 上传图片到后端
@@ -48,6 +55,7 @@ export default function ImageUploader() {
       });
       if (res.data.success) {
         setUploadedUrl(res.data.url);
+        onUploaded && onUploaded(res.data.url);
       } else {
         setError(res.data.error || '上传失败');
       }
@@ -63,19 +71,20 @@ export default function ImageUploader() {
       <h2 className="text-lg font-bold mb-2">图片上传与预览</h2>
       <input
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*"
         onChange={handleFileChange}
         className="mb-2"
       />
+      {compressing && <div className="text-blue-500 mb-2">图片压缩中，请稍候...</div>}
       {previewUrl && (
         <div className="mb-2">
-          <div className="text-sm text-gray-500">本地预览：</div>
+          <div className="text-sm text-gray-500">本地预览（已自动压缩）：</div>
           <img src={previewUrl} alt="预览" className="max-h-48 border" />
         </div>
       )}
       <button
         onClick={handleUpload}
-        disabled={loading || !file}
+        disabled={loading || !file || compressing}
         className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
       >
         {loading ? '上传中...' : '上传图片'}
