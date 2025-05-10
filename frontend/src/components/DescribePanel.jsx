@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
-const MODEL_OPTIONS = [
-  { value: 'deepseek', label: 'DeepSeek R1' },
-  { value: 'blip2', label: 'BLIP2' },
+const modelOptions = [
+  { value: 'janus', label: 'Janus（推荐）' },
+  { value: 'blip2', label: 'BLIP2' }
 ];
 const LANG_OPTIONS = [
   { value: 'zh', label: '中文' },
@@ -48,7 +48,7 @@ export default function DescribePanel({ imageUrl, segmentedUrl }) {
         <div>
           <label className="block text-sm font-medium mb-1">模型选择</label>
           <select value={model} onChange={e => setModel(e.target.value)} className="border rounded px-2 py-1">
-            {MODEL_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            {modelOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         </div>
         <div>
