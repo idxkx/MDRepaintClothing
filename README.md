@@ -32,6 +32,13 @@ MDRepaintClothing 是一个本地可用的服装图片重绘与生成平台，�
 - /config 配置文件
 - /history 历史记录
 - /docs 文档
+- /models 模型文件
+  - /blip2 BLIP2模型文件
+    - /weights 模型权重文件
+    - /processor 处理器配置文件
+  - /janus Janus模型文件
+    - /weights 模型权重文件
+    - /processor 处理器配置文件
 
 ## 参数说明
 - 不同模型支持不同参数，前端会动态展示并有详细说明
@@ -222,3 +229,174 @@ npm create vite@latest frontend -- --template react
   pytest tests/test_segmentation.py --maxfail=1 --disable-warnings -v
   ```
 - 测试覆盖模型加载、推理、异常分支 
+
+## 服装细节描述模块
+
+### 接口说明
+- 路径：`POST /api/describe`
+- 功能：对上传的服装原图和去背景图分别生成AI描述，支持BLIP2和DeepSeek R1模型，支持中英文。
+
+#### 请求参数
+| 参数名         | 类型   | 说明                       |
+| --------------| ------ | -------------------------- |
+| image_path    | str    | 服装原图路径               |
+| segmented_path| str    | 去背景图路径               |
+| model         | str    | 'deepseek' 或 'blip2'      |
+| lang          | str    | 'zh'（中文）或 'en'（英文）|
+
+#### 返回参数
+| 参数名         | 类型   | 说明                       |
+| --------------| ------ | -------------------------- |
+| success       | bool   | 是否成功                   |
+| model         | str    | 使用的模型                 |
+| lang          | str    | 语言                       |
+| origin_desc   | str    | 原图AI描述                 |
+| segmented_desc| str    | 去背景图AI描述             |
+| prompt        | str    | 使用的提示词（Prompt）     |
+| msg           | str    | 错误信息（失败时）         |
+
+#### 使用方法
+1. 上传服装图片，获取图片路径
+2. 进行抠图，获取去背景图片路径
+3. 选择模型和语言，调用`/api/describe`接口
+4. 前端展示原图和去背景图的两组描述
+
+#### DeepSeek R1提示词工程
+- 中文：请只根据图片内容，详细描述图片中服装的款式、颜色、材质、细节和风格，不要描述背景、模特或其它无关内容。
+- 英文：Please describe only the clothing in the image, focusing on style, color, material, details, and fashion. Ignore the background, model, or any irrelevant elements. 
+
+## 模型下载与使用
+
+### 模型下载
+项目使用了两个主要模型：BLIP2和Janus-Pro-7B。可以通过以下步骤下载模型：
+
+1. 安装依赖：
+```bash
+# 克隆Janus代码库（必需）
+git clone https://github.com/deepseek-ai/Janus.git
+cd Janus
+pip install -e .
+cd ..
+
+# 安装其他依赖
+pip install torch transformers accelerate
+```
+
+2. 运行下载脚本：
+```bash
+python download_models.py
+```
+
+下载的模型将保存在项目根目录的 `models/` 目录下：
+- `models/blip2/`: BLIP2模型文件
+  - `processor/`: BLIP2处理器
+  - `model/`: BLIP2模型
+- `models/janus/`: Janus-Pro-7B模型文件
+  - `processor/`: Janus处理器
+  - `model/`: Janus模型
+
+### Windows系统下查找模型位置
+在Windows系统中，如果您在E盘的projects目录下克隆了项目，模型文件的完整路径应该是：
+```
+E:\projects\MDRepaintClothing\models\blip2\processor  # BLIP2处理器
+E:\projects\MDRepaintClothing\models\blip2\model     # BLIP2模型
+E:\projects\MDRepaintClothing\models\janus\processor # Janus处理器
+E:\projects\MDRepaintClothing\models\janus\model    # Janus模型
+```
+
+您可以通过以下步骤确认模型是否下载成功：
+1. 打开文件资源管理器
+2. 导航到项目所在目录（例如：E:\projects\MDRepaintClothing）
+3. 查看 models 文件夹是否存在
+4. 检查 models 文件夹下是否有 blip2 和 janus 两个子文件夹
+5. 每个子文件夹中应该都有 processor 和 model 两个目录
+
+如果看不到这些文件夹，请检查：
+1. 下载脚本是否执行成功（没有报错）
+2. 是否在正确的目录下运行了下载脚本
+3. 磁盘空间是否充足（需要约25GB空间）
+
+### 模型使用示例
+
+#### 1. BLIP2模型（图片描述生成）
+```python
+from transformers import Blip2Processor, Blip2ForConditionalGeneration
+from PIL import Image
+
+# 加载模型
+processor = Blip2Processor.from_pretrained("models/blip2/processor")
+model = Blip2ForConditionalGeneration.from_pretrained("models/blip2/model")
+
+# 处理图片
+image = Image.open("path_to_your_image.jpg")
+inputs = processor(image, return_tensors="pt")
+
+# 生成描述
+outputs = model.generate(**inputs, max_length=50)
+description = processor.decode(outputs[0], skip_special_tokens=True)
+print(description)
+```
+
+#### 2. Janus-Pro-7B模型（多模态理解与生成）
+```python
+import torch
+from transformers import AutoModelForCausalLM
+from janus.models import MultiModalityCausalLM, VLChatProcessor
+from PIL import Image
+
+# 加载模型
+vl_chat_processor = VLChatProcessor.from_pretrained("models/janus/processor")
+tokenizer = vl_chat_processor.tokenizer
+
+vl_gpt = AutoModelForCausalLM.from_pretrained(
+    "models/janus/model",
+    trust_remote_code=True
+)
+
+# 设置设备
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+vl_gpt = vl_gpt.to(torch.bfloat16).to(device).eval()
+
+# 准备对话
+conversation = [
+    {
+        "role": "<|User|>",
+        "content": "描述这件衣服的细节",
+        "images": [Image.open("path_to_your_image.jpg")],
+    },
+    {"role": "<|Assistant|>", "content": ""},
+]
+
+# 处理输入
+pil_images = [conv["images"][0] for conv in conversation if "images" in conv]
+prepare_inputs = vl_chat_processor(
+    conversations=conversation,
+    images=pil_images,
+    force_batchify=True
+).to(device)
+
+# 生成回复
+inputs_embeds = vl_gpt.prepare_inputs_embeds(**prepare_inputs)
+outputs = vl_gpt.language_model.generate(
+    inputs_embeds=inputs_embeds,
+    attention_mask=prepare_inputs.attention_mask,
+    pad_token_id=tokenizer.eos_token_id,
+    bos_token_id=tokenizer.bos_token_id,
+    eos_token_id=tokenizer.eos_token_id,
+    max_new_tokens=512,
+    do_sample=False,
+    use_cache=True,
+)
+
+# 解码输出
+answer = tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)
+print(answer)
+```
+
+### 注意事项
+1. 确保有足够的磁盘空间（约25GB）用于存储模型
+2. 推荐使用GPU进行推理，最小显存要求：
+   - BLIP2: 8GB
+   - Janus-Pro-7B: 16GB
+3. 首次运行时会自动下载模型，请确保网络连接稳定
+4. 如遇到CUDA相关错误，请检查CUDA版本与PyTorch版本是否匹配 

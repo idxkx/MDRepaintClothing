@@ -37,3 +37,13 @@ htmlcov/
 # OS文件
 .DS_Store
 Thumbs.db 
+
+# 忽略所有模型权重文件
+/models/*/weights/*
+!*/.gitkeep
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.h5
+*.index.json

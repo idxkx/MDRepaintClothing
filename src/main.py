@@ -5,6 +5,7 @@ import os
 from . import upload
 from . import logging_config
 from .segmentation_api import router as segmentation_router
+from .describe_api import router as describe_router
 
 app = FastAPI(title="MDRepaintClothing 后端API")
 
@@ -22,6 +23,9 @@ app.include_router(upload.router)
 
 # 注册分割API路由
 app.include_router(segmentation_router, prefix="/api")
+
+# 注册服装描述API路由
+app.include_router(describe_router, prefix="/api")
 
 # 静态文件服务（图片访问）
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")

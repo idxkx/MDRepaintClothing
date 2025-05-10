@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import ImageUploader from './components/ImageUploader';
 import SegmentationPanel from './components/SegmentationPanel';
+import DescribePanel from './components/DescribePanel';
 
 function App() {
   const [uploadedUrl, setUploadedUrl] = useState('');
@@ -30,10 +31,14 @@ function App() {
       )}
       {/* 只展示保留衣服分割图 */}
       {uploadedUrl && segmentedClothUrl && (
-        <div className="flex flex-col items-center mt-6">
-          <div className="text-sm font-bold mb-2">保留衣服分割图</div>
-          <img src={segmentedClothUrl} alt="保留衣服分割图" className="max-h-72 border" />
-        </div>
+        <>
+          <div className="flex flex-col items-center mt-6">
+            <div className="text-sm font-bold mb-2">保留衣服分割图</div>
+            <img src={segmentedClothUrl} alt="保留衣服分割图" className="max-h-72 border" />
+          </div>
+          {/* 新增服装细节描述面板 */}
+          <DescribePanel imageUrl={uploadedUrl} segmentedUrl={segmentedClothUrl} />
+        </>
       )}
       <div style={{ position: 'fixed', right: 20, bottom: 20, color: '#888', fontSize: 12 }}>
         版本号：{version}

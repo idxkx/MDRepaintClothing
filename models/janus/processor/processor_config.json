@@ -1,0 +1,12 @@
+{
+  "add_special_token": false,
+  "ignore_id": -100,
+  "image_end_tag": "<end_of_image>",
+  "image_start_tag": "<begin_of_image>",
+  "image_tag": "<image_placeholder>",
+  "mask_prompt": true,
+  "num_image_tokens": 576,
+  "pad_tag": "<\uff5c\u2581pad\u2581\uff5c>",
+  "processor_class": "VLChatProcessor",
+  "sft_format": "deepseek"
+}
